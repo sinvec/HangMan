@@ -13,293 +13,183 @@ from threading import Lock
 
 data_dir = os.path.join(os.path.dirname(__file__),'data')
 
-# hangman sprites
-hngmn = ['''
-             
-                +---+
-                |   |
-                    |
-                    |
-                    |
-                    |
-              =========''', '''
-             
-                +---+
-                |   |
-                O   |
-                    |
-                    |
-                    |
-              =========''', '''
-             
-                +---+
-                |   |
-                O   |
-                |   |
-                    |
-                    |
-              =========''', '''
-             
-                +---+
-                |   |
-                O   |
-               /|   |
-                    |
-                    |
-              =========''', '''
-             
-                +---+
-                |   |
-                O   |
-               /|\  |
-                    |
-                    |
-              =========''', '''
-             
-                +---+
-                |   |
-                O   |
-               /|\  |
-               /    |
-                    |
-              =========''', '''
-
-                +---+
-                |   |
-                O   |
-               /|\  |
-               / \  |
-                    |
-              =========''']
-
-hanged_man = '''
-
-                +---+
-                |   |
-               _O_  |
-                |   |
-               / \  |
-                    |
-              ========='''
-
-free_man = ['''
-
-                +---+
-                    |
-                    |
-               _O_  |
-                |   |
-               | |  |
-              =========''','''
-
-                +---+
-                    |
-                    |
-               \O/  |
-                |   |
-               | |  |
-              =========''']
-
-
+terminal_sprites = read_from_disk(some_path)
 
 class Game:
-    #fields
+
     win = 0
     lose = 0
-    success_stat = 0
-    s=0
-    animal='dog'
-    blanks='_'
-    done_letters=['ij']
+
+    success_status = 0
+    fraim_number = 0
+    animal = 'dog'
+    blanks = '_'
+    done_letters = ['ij']
     
-    #methods
-    def __init__(self,words,list_type):#initialisation
+
+    def __init__(self, words):
         print(words)
         self.animal = words[randint(0,len(words)-1)].upper()
-        self.blanks=len(self.animal)*'_'
-        for i,letter in enumerate(self.animal):
+        self.blanks = len(self.animal) * '_'
+        for letter_index, letter in enumerate(self.animal):
             if not letter.isalpha():
-                self.blanks = self.blanks[:i]+letter+self.blanks[i+1:]
+                self.blanks = self.blanks[:letter_index] + letter + self.blanks[letter_index+1:]
         os.system("clear")
-        #print(hngmn[0])
-        #print ('Guess the name of the '+list_type+' letter by letter')
-        #print ('Your '+list_type+' is ' ,end='')
-        #for letter in self.blanks:
-        #    print(letter,end = ' ')
-        #print()
-        #time.sleep(3)
     
-    def Score(self):#displayed at the end
-        if self.success_stat == 1:
-            Game.win = Game.win + 1 # Game.win will be shared between objects
+    def update_score(self):
+        if self.success_status == 1:
+            Game.win += 1 
         else:
-            Game.lose = Game.lose + 1
+            Game.lose += 1
 
-    def Status(self): # Returns current win/lose status
-        print("Score is "+colored("win = "+str(Game.win),'green')+" \\ "+colored("lose ="+ str(Game.lose),'red') )
+    def reset_done_letters():
+        self.done_letters = []
+        return self.done_letters
+
+    def print_status(self): 
+        print("Score is", colored("win = " + str(Game.win), 'green'), "\\", colored("lose = "+ str(Game.lose), 'red') )
     
-    def MainGame(self):#main game method
+    def start(self):
         while True:
             os.system("clear")
-            k='ij'
-            print (colored(hngmn[self.s],'magenta')) # Print current state of hangman
-            for i in range(len(self.blanks)):
-                print(self.blanks[i],end= ' ')
+            print (colored(terminal_sprites['active'][self.fraim_number],'magenta'))
+            for blank_index in range(len(self.blanks)):
+                print(self.blanks[blank_index], end= ' ')
             print()
-            print(colored("DONE LETTERS:",'blue'),end='')
-            print(*self.done_letters,sep=',')
+            print(colored("DONE LETTERS:",'blue'), end='')
+            print(*self.done_letters, sep=',')
             while True:
-                k=input("Your choice of letter?")
-                if len(k)!=1:
+                entered_letter = input("Your choice of letter?")
+                if len(kentered_letter) != 1:
                     print('Enter only one letter please')
                     continue
-                elif not k.isalpha():
+                elif not entered_letter.isalpha():
                     print('Enter only alphabets')
                     continue
-                elif k.upper() in self.done_letters:
+                elif entered_letter.upper() in self.done_letters:
                     print ('The letter entered is already done')
-                    k='ij'
                     continue
                 else:       
-                    k=k.upper()
-                    self.done_letters.append(k)
+                    entered_letter = entered_letter.upper()
+                    self.done_letters.append(entered_letter)
                     break
                     
-            if self.animal.find(k)!=-1: # When letter is in the animal name
-                #print ('yes the letter \''+colored(k,'red')+'\' is there')
-                #time.sleep(2)
-                i=0
-                while i<len(self.animal):
-                    if self.animal[i]==k:
-                        self.blanks=self.blanks[:i]+k+self.blanks[i+1:]
-                    i=i+1   
+            if self.animal.find(k) !=- 1:
+                word_index = 0
+                while word_index < len(self.animal):
+                    if self.animal[i] == k:
+                        self.blanks = self.blanks[:word_index] + k + self.blanks[word_index+1:]
+                    word_index += 1   
             else:
-                self.s=self.s+1 # wrong selection counter 
+                self.fraim_number = self.fraim_number + 1
             
-            if self.blanks.find('_')==-1: # No blanks found
+            if self.blanks.find('_') == -1: # No blanks found
                 print('entered')
-                self.success_stat=1
+                self.fraim_numberuccess_status = 1
                 break
                     
-            if self.s==len(hngmn): # Hangman Complete
-                self.success_stat=0
+            if self.fraim_number == len(terminal_sprites['active']): # Hangman Complete
+                self.fraim_numberuccess_status = 0
                 break
 
-key = None
-def get_key_press():
-    global key
-    global printing_lock
-    while key!='q':
-        key = readchar.readchar()
-        if key == '\x03':
-            raise KeyboardInterrupt
+class Terminal:
 
-# Start Screen of game
-def start_screen():
-    i = 0
-    global key
-    global printing_key
-    try:
-        while key!='q':
-            os.system("clear") # equivalent to typing clear on terminal
-            print(colored(hngmn[i%7],'green'))
-            print (colored('##### WELCOME TO THE GAME OF HANGMAN #####','yellow'))
-            print (colored('####### Save the man from hanging ########','cyan'))
-            if i%2 == 0:
-                print (colored('       [press <Ctrl + c> to start]','red'))
-            time.sleep(0.5) # Animate by giving sleep time
-            i+=1
-    except:
-        pass
+    key = None
 
-def select_type():
-    os.system("clear")
-    print(colored("Rules: Guess the word letter by letter to save the man from hanging",'blue'))
-    print(colored("\n\n\t\tSelect word list\n\t\t1. Animals\n\t\t2. Pokemons\n\t\t3. Fruits\n\t\t4. Countries\n\t\t5. Bollywood Movies","magenta"))
-    file_name = None
-    lst_type = None
-    while True:
-        c = readchar.readchar() 
-        if c == '1': 
-            file_name = 'animals.txt'
-            lst_type = 'animals'
-            break
-        elif c == '2':
-            file_name = 'pokemons.txt'
-            lst_type = 'pokemons'
-            break
-        elif c == '3':
-            file_name = 'fruits.txt'
-            lst_type = 'fruits'
-            break
-        elif c == '4':
-            file_name = 'countries.txt'
-            lst_type = 'fruits'
-            break
-        elif c == '5':
-            file_name = 'bollywood movies.txt'
-            lst_type = 'bollywood movies'
-            break
-        elif c == '\x03':
-            raise KeyboardInterrupt
+    def get_key_press():
+        while Terminal.key != 'q':
+            Terminal.key = readchar.readchar()
+            if Terminal.key == '\x03':
+                raise KeyboardInterrupt
 
-    # Open file containing animal names in read-only mode
-    #file_loc = os.path.join(os.path.dirname(os.path.realpath(__file__)),DATA_LOCATION,file_name)
-    '''
-    file_loc = os.path.join(data_dir,file_name)
-    f = open(file_loc,'r')
+    def start_screen():
+        pressed_keys_number = 0
+        try:
+            while Terminal.key != 'q':
+                os.system("clear") 
+                print(colored(terminal_sprites['active'][pressed_keys_number%7],'green'))
+                print (colored('##### WELCOME TO THE GAME OF HANGMAN #####','yellow'))
+                print (colored('####### Save the man from hanging ########','cyan'))
+                if pressed_keys_number % 2 == 0:
+                    print (colored('       [press <Ctrl + c> to start]','red'))
+                time.sleep(0.5)
+                pressed_keys_number += 1
+        except:
+            pass
 
-    # Add each animal name on each line to a list 'animals'
-    lst =  [x.strip() for x in f.readlines()]
-    '''
-    lst = word_list[lst_type]
-    print(lst)
-    return lst_type,lst
+    def select_type():
+        os.system("clear")
+        print(colored("Rules: Guess the word letter by letter to save the man from hanging",'blue'))
+        print(colored("\n\n\t\tSelect word list\n\t\t1. Animals\n\t\t2. Pokemons\n\t\t3. Fruits\n\t\t4. Countries\n\t\t5. Bollywood Movies","magenta"))
+        file_name = None
+        list_type = None
+        while True:
+            entered_letter = readchar.readchar() 
+            if entered_letter == '1': 
+                file_name = 'animals.txt'
+                list_type = 'animals'
+                break
+            elif entered_letter == '2':
+                file_name = 'pokemons.txt'
+                list_type = 'pokemons'
+                break
+            elif entered_letter == '3':
+                file_name = 'fruits.txt'
+                list_type = 'fruits'
+                break
+            elif entered_letter == '4':
+                file_name = 'countries.txt'
+                list_type = 'fruits'
+                break
+            elif entered_letter == '5':
+                file_name = 'bollywood movies.txt'
+                list_type = 'bollywood movies'
+                break
+            elif entered_letter == '\x03':
+                raise KeyboardInterrupt
 
+        return list_type, word_list[list_type]
 
-# Function for animation after win or lose
-# Takes a Game class object as input
-def hanging_man_anim(game):  
-    i = 0    
-    if game.success_stat == 0:
-        while i <= 4:
-            os.system("clear")
-            if i%2 == 0:
-                print(colored(hanged_man,'red'))
-            else:
-                print(colored(hngmn[-1],'red'))
-            print(colored(":( !Man Hanged! :(\nCorrect word: ",'red')+colored(game.animal,'green'))
-            game.Status()
-            time.sleep(0.5)
-            i+=1
-    else:
-        while i <= 4:
-            os.system("clear")
-            if i%2 == 0:
-                print(colored(free_man[0],'green'))
-            else:
-                print(free_man[1])
-            print(colored(":) !Man Saved! :)",'green'))
-            game.Status()
-            time.sleep(0.5)
-            i+=1
+    # Function for animation after win or lose
+    # Takes a Game class object as input
+    def hanging_man_anim(game):  
+        pressed_keys_number = 0    
+        if game.success_status == 0:
+            while pressed_keys_number <= 4:
+                os.system("clear")
+                if pressed_keys_number % 2 == 0:
+                    print(colored(terminal_sprites['hanged'],'red'))
+                else:
+                    print(colored(terminal_sprites['active'][-1],'red'))
+                print(colored(":( !Man Hanged! :(\nCorrect word: ",'red')+colored(game.animal,'green'))
+                game.print_status()
+                time.sleep(0.5)
+                pressed_keys_number += 1
+        else:
+            while pressed_keys_number <= 4:
+                os.system("clear")
+                if pressed_keys_number % 2 == 0:
+                    print(colored(terminal_sprites['free'][0],'green'))
+                else:
+                    print(terminal_sprites['free'][1])
+                print(colored(":) !Man Saved! :)",'green'))
+                game.print_status()
+                time.sleep(0.5)
+                pressed_keys_number += 1
 
 def main():
-    start_screen()
-    list_type,words = select_type()
+    Terminal.start_screen()
+    _, words = Terminal.select_type()
     print(words)
 
-    while True:#Game loop
+    while True:
         
-        game = Game(words,list_type)
-        
-        game.done_letters=[]
-        
-        game.MainGame()
-        
-        game.Score()
-        hanging_man_anim(game)
-        #game.Score()
+        game = Game(words)
+        game.reset_done_letters()
+        game.start()
+        game.update_score()
+
+        Terminal.hanging_man_anim(game)
         
         exit_question = input("another game?(y/n)")
         break_flag = 0
@@ -307,7 +197,7 @@ def main():
             if (exit_question =='y'):
                 break
             elif (exit_question == 'n'):
-                break_flag =1
+                break_flag = 1
                 break   
             else:
                 exit_question = input("please type (y/n)")
